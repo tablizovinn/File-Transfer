@@ -15,10 +15,17 @@ class Program
 
         FtpClient ftpClient = new FtpClient(ftpServer, username, password);
 
+        DateTime startTime = DateTime.Now; 
+
+        Console.WriteLine($"Application started at: {startTime}");
 
         recursiveDirectory(localFolderPath, remoteFolderPath, ftpClient);
 
-        Console.WriteLine("Upload complete.");
+        TimeSpan processingTime = DateTime.Now - startTime; 
+
+        string formattedTime = $"{processingTime.Days} days, {processingTime.Hours} hours, {processingTime.Minutes} minutes, {processingTime.Seconds} seconds";
+
+        Console.WriteLine($"Upload complete. Total processing time: {formattedTime}");
     }
 
     static void recursiveDirectory(string dirPath, string uploadPath, FtpClient ftpClient)
@@ -29,13 +36,17 @@ class Program
 
         foreach (string file in files)
         {
+            string fileName = Path.GetFileName(file);
+            Console.WriteLine($"Uploading file: {fileName}");
             ftpClient.UploadFile(uploadPath + "/" + Path.GetFileName(file), file);
         }
 
 
         foreach (string subDir in subDirs)
         {
+
             string subDirName = Path.GetFileName(subDir);
+            Console.WriteLine($"Uploading subdirectory: {subDirName}");
             string subDirRemotePath = uploadPath + "/" + subDirName;
 
 
