@@ -101,24 +101,28 @@ class Program
         const int maxRetries = 5; // Increase the number of retry attempts
         const int delayMilliseconds = 2000; // Increase the delay between retries
         int retryCount = 0;
+        bool uploadSuccessful = false;
 
-        while (true)
+        while (!uploadSuccessful && retryCount <= maxRetries)
         {
             try
             {
                 await ftpClient.UploadFileAsync(remotePath, localPath);
-                break; // Upload successful, exit retry loop
+                uploadSuccessful = true; // Set upload flag to true
             }
             catch (WebException ex) when (ex.Response is FtpWebResponse ftpResponse && ftpResponse.StatusCode == FtpStatusCode.ServiceNotAvailable)
             {
                 retryCount++;
-                if (retryCount > maxRetries)
+                if (retryCount <= maxRetries)
                 {
-                    // Max retries reached, throw the exception
-                    throw;
+                    // Implement exponential backoff
+                    await Task.Delay(delayMilliseconds * (int)Math.Pow(2, retryCount));
                 }
-                // Wait for a short delay before retrying
-                await Task.Delay(delayMilliseconds);
+                else
+                {
+                    // Max retries reached, log error and continue without throwing exception
+                    Console.WriteLine($"Max retry attempts reached for file upload: {localPath}");
+                }
             }
         }
     }
@@ -182,8 +186,8 @@ class FtpClient
                     // Max retries reached, throw the exception
                     throw;
                 }
-                // Wait for a short delay before retrying
-                await Task.Delay(delayMilliseconds);
+                // Implement exponential backoff
+                await Task.Delay(delayMilliseconds * (int)Math.Pow(2, retryCount));
             }
             finally
             {
