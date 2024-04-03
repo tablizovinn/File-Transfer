@@ -160,7 +160,7 @@ class FtpClient
 
     public async Task CreateDirectoryWithRetryAsync(string remotePath)
     {
-        const int maxRetries = 1000000; // Increase the number of retry attempts
+        const int maxRetries = 5; // Increase the number of retry attempts
         const int delayMilliseconds = 2000; // Increase the delay between retries
         int retryCount = 0;
 
